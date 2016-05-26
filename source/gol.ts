@@ -169,6 +169,23 @@ class Grid
     public isWithinBounds(cell: Cell): boolean {
         return cell.x >= 0 && cell.y >= 0 && cell.x < this.size && cell.y < this.size;
     }
+    public collectLivingCellsAndTheirFringeCells(): Array<Cell> {
+        var currentlyLivingCells = this.livingCells;
+
+        // get dead neighbor cells of living cells
+        var deadNeighborCells = Array<Cell>();
+        for (var index = 0; index < currentlyLivingCells.length; index++)
+        {
+            var aliveCell = currentlyLivingCells[index];
+            var deadNeighborsOfLiveCell = aliveCell.neighbors.filter(n => this.isWithinBounds(n) && !this.isAlive(n));
+
+            deadNeighborsOfLiveCell.forEach(n => {
+                deadNeighborCells.push(n);
+            });
+        }
+
+        return currentlyLivingCells.concat(deadNeighborCells);
+    }
 }
 
 /**
@@ -189,6 +206,11 @@ class GameOfLife
         this._grid = new Grid(gridSize);
     }
 
+    // PROPERTIES
+    public get turn(): number {
+        return this._turn;
+    }
+
     // PUBLIC METHODS
     public restart() {
         this._canvas.clear();
@@ -201,28 +223,14 @@ class GameOfLife
         this.paint();
     }
     public next() {
-        // create next grid
+        this._turn++;
+
         var nextGrid = new Grid(this._grid.size);
 
-        // get alive cells
-        var aliveCells = this._grid.livingCells;
-
-        // get dead neighbor cells of alive cells
-        var deadNeighborCells = Array<Cell>();
-        for(var index = 0; index < aliveCells.length; index++)
-        {
-            var aliveCell = aliveCells[index];
-            var deadNeighborsOfLiveCell = aliveCell.neighbors.filter(n => this._grid.isWithinBounds(n) && !this._grid.isAlive(n));
-
-            deadNeighborsOfLiveCell.forEach(n => {
-                deadNeighborCells.push(n);
-            });
-        }
-
         // calculate fate of relevant cells
-        var relevantCells = aliveCells.concat(deadNeighborCells);
-        var nextLiveCells = relevantCells.filter(c => GameOfLifeRules.willBeAliveNextTurn(c, this._grid));
-        nextGrid.makeAliveMany(nextLiveCells);
+        var relevantCells = this._grid.collectLivingCellsAndTheirFringeCells();
+        var filterLivingCellsForNextTurn = relevantCells.filter(c => GameOfLifeRules.willBeAliveNextTurn(c, this._grid));
+        nextGrid.makeAliveMany(filterLivingCellsForNextTurn);
 
         this._grid = nextGrid;
         this.paint();
@@ -255,7 +263,7 @@ class GameOfLife
         for(var i = 0; i < 9; i++)
         {
             var cell = cell.rightNeighbor;
-            this._grid.makeAlive(cell)
+            this._grid.makeAlive(cell);
         }
     }
 }
@@ -326,15 +334,16 @@ class UniformGridCanvas {
     public paintGrid(grid: Grid) {
         this.clear();
 
-        var aliveCellCoords = grid.livingCells;
+        var livingCells = grid.livingCells;
 
-        for (var index in aliveCellCoords) {
-            if (!aliveCellCoords.hasOwnProperty(index)) {
+        for (var index in livingCells) {
+            if (!livingCells.hasOwnProperty(index))
+            {
                 continue;
             }
 
-            var coords = aliveCellCoords[index];
-            this.paintCell(coords);
+            var cells = livingCells[index];
+            this.paintCell(cells);
         }
     }
     public paintCell(coords: Cell) {

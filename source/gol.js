@@ -189,6 +189,20 @@ var Grid = (function () {
     Grid.prototype.isWithinBounds = function (cell) {
         return cell.x >= 0 && cell.y >= 0 && cell.x < this.size && cell.y < this.size;
     };
+    Grid.prototype.collectLivingCellsAndTheirFringeCells = function () {
+        var _this = this;
+        var currentlyLivingCells = this.livingCells;
+        // get dead neighbor cells of living cells
+        var deadNeighborCells = Array();
+        for (var index = 0; index < currentlyLivingCells.length; index++) {
+            var aliveCell = currentlyLivingCells[index];
+            var deadNeighborsOfLiveCell = aliveCell.neighbors.filter(function (n) { return _this.isWithinBounds(n) && !_this.isAlive(n); });
+            deadNeighborsOfLiveCell.forEach(function (n) {
+                deadNeighborCells.push(n);
+            });
+        }
+        return currentlyLivingCells.concat(deadNeighborCells);
+    };
     return Grid;
 }());
 /**
@@ -202,6 +216,14 @@ var GameOfLife = (function () {
         this._canvas = canvas;
         this._grid = new Grid(gridSize);
     }
+    Object.defineProperty(GameOfLife.prototype, "turn", {
+        // PROPERTIES
+        get: function () {
+            return this._turn;
+        },
+        enumerable: true,
+        configurable: true
+    });
     // PUBLIC METHODS
     GameOfLife.prototype.restart = function () {
         this._canvas.clear();
@@ -213,23 +235,12 @@ var GameOfLife = (function () {
     };
     GameOfLife.prototype.next = function () {
         var _this = this;
-        // create next grid
+        this._turn++;
         var nextGrid = new Grid(this._grid.size);
-        // get alive cells
-        var aliveCells = this._grid.livingCells;
-        // get dead neighbor cells of alive cells
-        var deadNeighborCells = Array();
-        for (var index = 0; index < aliveCells.length; index++) {
-            var aliveCell = aliveCells[index];
-            var deadNeighborsOfLiveCell = aliveCell.neighbors.filter(function (n) { return _this._grid.isWithinBounds(n) && !_this._grid.isAlive(n); });
-            deadNeighborsOfLiveCell.forEach(function (n) {
-                deadNeighborCells.push(n);
-            });
-        }
         // calculate fate of relevant cells
-        var relevantCells = aliveCells.concat(deadNeighborCells);
-        var nextLiveCells = relevantCells.filter(function (c) { return GameOfLifeRules.willBeAliveNextTurn(c, _this._grid); });
-        nextGrid.makeAliveMany(nextLiveCells);
+        var relevantCells = this._grid.collectLivingCellsAndTheirFringeCells();
+        var filterLivingCellsForNextTurn = relevantCells.filter(function (c) { return GameOfLifeRules.willBeAliveNextTurn(c, _this._grid); });
+        nextGrid.makeAliveMany(filterLivingCellsForNextTurn);
         this._grid = nextGrid;
         this.paint();
     };
@@ -316,13 +327,13 @@ var UniformGridCanvas = (function () {
     // PUBLIC METHODS
     UniformGridCanvas.prototype.paintGrid = function (grid) {
         this.clear();
-        var aliveCellCoords = grid.livingCells;
-        for (var index in aliveCellCoords) {
-            if (!aliveCellCoords.hasOwnProperty(index)) {
+        var livingCells = grid.livingCells;
+        for (var index in livingCells) {
+            if (!livingCells.hasOwnProperty(index)) {
                 continue;
             }
-            var coords = aliveCellCoords[index];
-            this.paintCell(coords);
+            var cells = livingCells[index];
+            this.paintCell(cells);
         }
     };
     UniformGridCanvas.prototype.paintCell = function (coords) {
