@@ -1,5 +1,5 @@
 /**
- * Holds the x- and y-coordinates on the Grid and operates on neighbor cells.
+ * Holds the (logical) x- and y-coordinates on the Grid and operates on neighbor cells.
  */
 var Cell = (function () {
     // CTORS AND FACTORIES
@@ -97,7 +97,7 @@ var Cell = (function () {
     return Cell;
 }());
 /**
- * Manages the state of cells and keeps track of these.
+ * Manages the (logical) state of cells and keeps track of these.
  */
 var Grid = (function () {
     // CTORS
@@ -115,14 +115,14 @@ var Grid = (function () {
     });
     Object.defineProperty(Grid.prototype, "livingCells", {
         get: function () {
-            var aliveCells = Array();
+            var livingCells = Array();
             for (var index in this._indicesOfLivingCells) {
                 if (this._indicesOfLivingCells.hasOwnProperty(index)) {
-                    var coords = Cell.fromIndex(index);
-                    aliveCells.push(coords);
+                    var cell = Cell.fromIndex(index);
+                    livingCells.push(cell);
                 }
             }
-            return aliveCells;
+            return livingCells;
         },
         enumerable: true,
         configurable: true
@@ -164,7 +164,7 @@ var Grid = (function () {
         }
         return neighbors;
     };
-    Grid.prototype.countLiveNeighbors = function (cell) {
+    Grid.prototype.countLivingNeighbors = function (cell) {
         var _this = this;
         var neighbors = this.getNeighbors(cell);
         var aliveNeighbors = neighbors.filter(function (n) { return _this.isAlive(n); });
@@ -278,23 +278,23 @@ var GameOfLife = (function () {
 var GameOfLifeRules = (function () {
     function GameOfLifeRules() {
     }
-    GameOfLifeRules.willBeAliveNextTurn = function (coords, currentGrid) {
-        var isAlive = currentGrid.isAlive(coords);
-        var countLiveNeighbors = currentGrid.countLiveNeighbors(coords);
+    GameOfLifeRules.willBeAliveNextTurn = function (cell, currentGrid) {
+        var isAlive = currentGrid.isAlive(cell);
+        var countLivingNeighbors = currentGrid.countLivingNeighbors(cell);
         // Any live cell with fewer than two live neighbours dies, as if caused by under-population.
-        if (isAlive && countLiveNeighbors < 2) {
+        if (isAlive && countLivingNeighbors < 2) {
             return false;
         }
         // Any live cell with two or three live neighbours lives on to the next generation.
-        if (isAlive && (countLiveNeighbors == 2 || countLiveNeighbors == 3)) {
+        if (isAlive && (countLivingNeighbors == 2 || countLivingNeighbors == 3)) {
             return true;
         }
         // Any live cell with more than three live neighbours dies, as if by over-population.
-        if (isAlive && countLiveNeighbors > 3) {
+        if (isAlive && countLivingNeighbors > 3) {
             return false;
         }
         // Any dead cell with exactly three live neighbours becomes a live cell, as if by reproduction.
-        if (!isAlive && countLiveNeighbors == 3) {
+        if (!isAlive && countLivingNeighbors == 3) {
             return true;
         }
         return isAlive;
@@ -313,8 +313,9 @@ var RandomNumberGenerator = (function () {
     return RandomNumberGenerator;
 }());
 /**
- * Takes care of visualizing our Grid, i.e. paints the In-Memory Grid onto the HTHML canvas.
+ * Takes care of visualizing our logical Grid, i.e. paints the logical Grid onto the HTHML canvas.
  */
+// TODO: separate logic into handlers for visual coordinates and logical ones
 var UniformGridCanvas = (function () {
     // CTORS
     function UniformGridCanvas(canvas, cellSizeInPixels) {
@@ -336,18 +337,18 @@ var UniformGridCanvas = (function () {
             this.paintCell(cells);
         }
     };
-    UniformGridCanvas.prototype.paintCell = function (coords) {
+    UniformGridCanvas.prototype.paintCell = function (cell) {
         this._context.fillStyle = this._defaultFillStyle;
-        this._context.fillRect(coords.x * this._cellSizeInPixels, coords.y * this._cellSizeInPixels, this._cellSizeInPixels, this._cellSizeInPixels);
+        this._context.fillRect(cell.x * this._cellSizeInPixels, cell.y * this._cellSizeInPixels, this._cellSizeInPixels, this._cellSizeInPixels);
     };
-    UniformGridCanvas.prototype.clearCell = function (coords) {
-        this._context.clearRect(coords.x * this._cellSizeInPixels, coords.y * this._cellSizeInPixels, this._cellSizeInPixels, this._cellSizeInPixels);
+    UniformGridCanvas.prototype.clearCell = function (cell) {
+        this._context.clearRect(cell.x * this._cellSizeInPixels, cell.y * this._cellSizeInPixels, this._cellSizeInPixels, this._cellSizeInPixels);
     };
     UniformGridCanvas.prototype.clear = function () {
         this._context.clearRect(0, 0, this._canvas.width, this._canvas.height);
     };
     // PRIVATE METHODS
-    UniformGridCanvas.prototype.getCoordsOfCell = function (x, y) {
+    UniformGridCanvas.prototype.getVisualCellOfLogicalCoords = function (x, y) {
         return new Cell(this._cellSizeInPixels * x, this._cellSizeInPixels * y);
     };
     return UniformGridCanvas;

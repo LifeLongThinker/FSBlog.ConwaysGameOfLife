@@ -1,9 +1,8 @@
 /**
- * Holds the x- and y-coordinates on the Grid and operates on neighbor cells.
+ * Holds the (logical) x- and y-coordinates on the Grid and operates on neighbor cells.
  */
 class Cell
 {
-
     // PRIVATE MEMBERS
     private _x: number;
     private _y: number;
@@ -62,7 +61,7 @@ class Cell
 }
 
 /**
- * Manages the state of cells and keeps track of these.
+ * Manages the (logical) state of cells and keeps track of these.
  */
 class Grid
 {
@@ -81,18 +80,18 @@ class Grid
         return this._size;
     }
     public get livingCells(): Array<Cell> {
-        var aliveCells = Array<Cell>();
+        var livingCells = Array<Cell>();
 
         for(var index in this._indicesOfLivingCells)
         {
             if(this._indicesOfLivingCells.hasOwnProperty(index))
             {
-                var coords = Cell.fromIndex(index);
-                aliveCells.push(coords);
+                var cell = Cell.fromIndex(index);
+                livingCells.push(cell);
             }
         }
 
-        return aliveCells;
+        return livingCells;
     }
 
     // PUBLIC METHODS
@@ -138,7 +137,7 @@ class Grid
 
         return neighbors;
     }
-    public countLiveNeighbors(cell: Cell): number {
+    public countLivingNeighbors(cell: Cell): number {
         var neighbors = this.getNeighbors(cell);
         var aliveNeighbors = neighbors.filter(n => this.isAlive(n));
         return aliveNeighbors.length;
@@ -272,30 +271,30 @@ class GameOfLife
  * Stores the GoL rules and lets Cells and Grids operate on these.
  */
 class GameOfLifeRules {
-    static willBeAliveNextTurn(coords: Cell, currentGrid: Grid): boolean {
-        var isAlive = currentGrid.isAlive(coords);
-        var countLiveNeighbors = currentGrid.countLiveNeighbors(coords);
+    static willBeAliveNextTurn(cell: Cell, currentGrid: Grid): boolean {
+        var isAlive = currentGrid.isAlive(cell);
+        var countLivingNeighbors = currentGrid.countLivingNeighbors(cell);
 
         // Any live cell with fewer than two live neighbours dies, as if caused by under-population.
-        if(isAlive && countLiveNeighbors < 2)
+        if(isAlive && countLivingNeighbors < 2)
         {
             return false;
         }
 
         // Any live cell with two or three live neighbours lives on to the next generation.
-        if(isAlive && (countLiveNeighbors == 2 || countLiveNeighbors == 3))
+        if(isAlive && (countLivingNeighbors == 2 || countLivingNeighbors == 3))
         {
             return true;
         }
 
         // Any live cell with more than three live neighbours dies, as if by over-population.
-        if(isAlive && countLiveNeighbors > 3)
+        if(isAlive && countLivingNeighbors > 3)
         {
             return false;
         }
 
         // Any dead cell with exactly three live neighbours becomes a live cell, as if by reproduction.
-        if(!isAlive && countLiveNeighbors == 3)
+        if(!isAlive && countLivingNeighbors == 3)
         {
             return true;
         }
@@ -314,8 +313,9 @@ class RandomNumberGenerator {
 }
 
 /**
- * Takes care of visualizing our Grid, i.e. paints the In-Memory Grid onto the HTHML canvas.
+ * Takes care of visualizing our logical Grid, i.e. paints the logical Grid onto the HTHML canvas.
  */
+// TODO: separate logic into handlers for visual coordinates and logical ones
 class UniformGridCanvas {
     // PRIVATE MEMBERS
     private _canvas: HTMLCanvasElement;
@@ -346,19 +346,19 @@ class UniformGridCanvas {
             this.paintCell(cells);
         }
     }
-    public paintCell(coords: Cell) {
+    public paintCell(cell: Cell) {
         this._context.fillStyle = this._defaultFillStyle;
-        this._context.fillRect(coords.x * this._cellSizeInPixels, coords.y * this._cellSizeInPixels, this._cellSizeInPixels, this._cellSizeInPixels);
+        this._context.fillRect(cell.x * this._cellSizeInPixels, cell.y * this._cellSizeInPixels, this._cellSizeInPixels, this._cellSizeInPixels);
     }
-    public clearCell(coords: Cell) {
-        this._context.clearRect(coords.x * this._cellSizeInPixels, coords.y * this._cellSizeInPixels, this._cellSizeInPixels, this._cellSizeInPixels);
+    public clearCell(cell: Cell) {
+        this._context.clearRect(cell.x * this._cellSizeInPixels, cell.y * this._cellSizeInPixels, this._cellSizeInPixels, this._cellSizeInPixels);
     }
     public clear() {
         this._context.clearRect(0, 0, this._canvas.width, this._canvas.height);
     }
 
     // PRIVATE METHODS
-    private getCoordsOfCell(x: number, y: number): Cell {
+    private getVisualCellOfLogicalCoords(x: number, y: number): Cell {
         return new Cell(this._cellSizeInPixels * x, this._cellSizeInPixels * y);
     }
 }
