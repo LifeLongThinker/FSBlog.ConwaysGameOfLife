@@ -3,6 +3,7 @@
  */
 class Cell
 {
+
     // PRIVATE MEMBERS
     private _x: number;
     private _y: number;
@@ -311,14 +312,14 @@ class UniformGridCanvas {
     // PRIVATE MEMBERS
     private _canvas: HTMLCanvasElement;
     private _context: CanvasRenderingContext2D;
-    private _cellSize: number;
+    private _cellSizeInPixels: number;
     private _defaultFillStyle = "#222";
 
     // CTORS
-    constructor(canvas: HTMLCanvasElement, cellSize: number = 10) {
+    constructor(canvas: HTMLCanvasElement, cellSizeInPixels: number = 10) {
         this._canvas = canvas;
         this._context = canvas.getContext("2d");
-        this._cellSize = cellSize;
+        this._cellSizeInPixels = cellSizeInPixels;
     }
 
     // PUBLIC METHODS
@@ -338,10 +339,10 @@ class UniformGridCanvas {
     }
     public paintCell(coords: Cell) {
         this._context.fillStyle = this._defaultFillStyle;
-        this._context.fillRect(coords.x * this._cellSize, coords.y * this._cellSize, this._cellSize, this._cellSize);
+        this._context.fillRect(coords.x * this._cellSizeInPixels, coords.y * this._cellSizeInPixels, this._cellSizeInPixels, this._cellSizeInPixels);
     }
     public clearCell(coords: Cell) {
-        this._context.clearRect(coords.x * this._cellSize, coords.y * this._cellSize, this._cellSize, this._cellSize);
+        this._context.clearRect(coords.x * this._cellSizeInPixels, coords.y * this._cellSizeInPixels, this._cellSizeInPixels, this._cellSizeInPixels);
     }
     public clear() {
         this._context.clearRect(0, 0, this._canvas.width, this._canvas.height);
@@ -349,10 +350,10 @@ class UniformGridCanvas {
 
     // PRIVATE METHODS
     private getCoordsOfCell(x: number, y: number): Cell {
-        return new Cell(this._cellSize * x, this._cellSize * y);
+        return new Cell(this._cellSizeInPixels * x, this._cellSizeInPixels * y);
     }
 }
 
 var canvasElement = <HTMLCanvasElement>document.getElementById("canvas");
-var canvas = new UniformGridCanvas(canvasElement);
-var game = new GameOfLife(canvas, 500);
+var canvas = new UniformGridCanvas(canvasElement, 6);
+var game = new GameOfLife(canvas, 100);

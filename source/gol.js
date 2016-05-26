@@ -306,12 +306,12 @@ var RandomNumberGenerator = (function () {
  */
 var UniformGridCanvas = (function () {
     // CTORS
-    function UniformGridCanvas(canvas, cellSize) {
-        if (cellSize === void 0) { cellSize = 10; }
+    function UniformGridCanvas(canvas, cellSizeInPixels) {
+        if (cellSizeInPixels === void 0) { cellSizeInPixels = 10; }
         this._defaultFillStyle = "#222";
         this._canvas = canvas;
         this._context = canvas.getContext("2d");
-        this._cellSize = cellSize;
+        this._cellSizeInPixels = cellSizeInPixels;
     }
     // PUBLIC METHODS
     UniformGridCanvas.prototype.paintGrid = function (grid) {
@@ -327,21 +327,21 @@ var UniformGridCanvas = (function () {
     };
     UniformGridCanvas.prototype.paintCell = function (coords) {
         this._context.fillStyle = this._defaultFillStyle;
-        this._context.fillRect(coords.x * this._cellSize, coords.y * this._cellSize, this._cellSize, this._cellSize);
+        this._context.fillRect(coords.x * this._cellSizeInPixels, coords.y * this._cellSizeInPixels, this._cellSizeInPixels, this._cellSizeInPixels);
     };
     UniformGridCanvas.prototype.clearCell = function (coords) {
-        this._context.clearRect(coords.x * this._cellSize, coords.y * this._cellSize, this._cellSize, this._cellSize);
+        this._context.clearRect(coords.x * this._cellSizeInPixels, coords.y * this._cellSizeInPixels, this._cellSizeInPixels, this._cellSizeInPixels);
     };
     UniformGridCanvas.prototype.clear = function () {
         this._context.clearRect(0, 0, this._canvas.width, this._canvas.height);
     };
     // PRIVATE METHODS
     UniformGridCanvas.prototype.getCoordsOfCell = function (x, y) {
-        return new Cell(this._cellSize * x, this._cellSize * y);
+        return new Cell(this._cellSizeInPixels * x, this._cellSizeInPixels * y);
     };
     return UniformGridCanvas;
 }());
 var canvasElement = document.getElementById("canvas");
-var canvas = new UniformGridCanvas(canvasElement);
-var game = new GameOfLife(canvas, 500);
+var canvas = new UniformGridCanvas(canvasElement, 6);
+var game = new GameOfLife(canvas, 100);
 //# sourceMappingURL=gol.js.map
