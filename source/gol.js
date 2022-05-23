@@ -1,7 +1,7 @@
 /**
  * Holds the (logical) x- and y-coordinates on the Grid and operates on neighbor cells.
  */
-var Cell = (function () {
+var Cell = /** @class */ (function () {
     // CTORS AND FACTORIES
     function Cell(x, y) {
         this._x = x;
@@ -16,90 +16,98 @@ var Cell = (function () {
         get: function () {
             return this._x;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(Cell.prototype, "y", {
         get: function () {
             return this._y;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(Cell.prototype, "neighbors", {
         get: function () {
-            return [this.leftNeighbor, this.upperLeftNeighbor, this.topNeighbor, this.upperRightNeighbor, this.rightNeighbor, this.lowerRightNeighbor, this.bottomNeighbor, this.lowerLeftNeighbor];
+            return [
+                this.leftNeighbor,
+                this.upperLeftNeighbor,
+                this.topNeighbor,
+                this.upperRightNeighbor,
+                this.rightNeighbor,
+                this.lowerRightNeighbor,
+                this.bottomNeighbor,
+                this.lowerLeftNeighbor
+            ];
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(Cell.prototype, "leftNeighbor", {
-        // PROPERTIES
         get: function () {
             return new Cell(this.x - 1, this.y);
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(Cell.prototype, "upperLeftNeighbor", {
         get: function () {
             return new Cell(this.x - 1, this.y - 1);
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(Cell.prototype, "topNeighbor", {
         get: function () {
             return new Cell(this.x, this.y - 1);
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(Cell.prototype, "upperRightNeighbor", {
         get: function () {
             return new Cell(this.x + 1, this.y - 1);
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(Cell.prototype, "rightNeighbor", {
         get: function () {
             return new Cell(this.x + 1, this.y);
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(Cell.prototype, "lowerRightNeighbor", {
         get: function () {
             return new Cell(this.x + 1, this.y + 1);
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(Cell.prototype, "bottomNeighbor", {
         get: function () {
             return new Cell(this.x, this.y + 1);
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(Cell.prototype, "lowerLeftNeighbor", {
         get: function () {
             return new Cell(this.x - 1, this.y + 1);
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     // PUBLIC METHODS
     Cell.prototype.toString = function () {
-        return this.x + "|" + this.y;
+        return "".concat(this.x, "|").concat(this.y);
     };
     return Cell;
 }());
 /**
  * Manages the (logical) state of cells and keeps track of these.
  */
-var Grid = (function () {
+var Grid = /** @class */ (function () {
     // CTORS
     function Grid(size) {
         this._size = size;
@@ -110,7 +118,7 @@ var Grid = (function () {
         get: function () {
             return this._size;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(Grid.prototype, "livingCells", {
@@ -124,7 +132,7 @@ var Grid = (function () {
             }
             return livingCells;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     // PUBLIC METHODS
@@ -187,7 +195,10 @@ var Grid = (function () {
         }
     };
     Grid.prototype.isWithinBounds = function (cell) {
-        return cell.x >= 0 && cell.y >= 0 && cell.x < this.size && cell.y < this.size;
+        return cell.x >= 0
+            && cell.y >= 0
+            && cell.x < this.size
+            && cell.y < this.size;
     };
     Grid.prototype.collectLivingCellsAndTheirFringeCells = function () {
         var _this = this;
@@ -195,8 +206,8 @@ var Grid = (function () {
         // get dead neighbor cells of living cells
         var deadNeighborCells = Array();
         for (var index = 0; index < currentlyLivingCells.length; index++) {
-            var aliveCell = currentlyLivingCells[index];
-            var deadNeighborsOfLiveCell = aliveCell.neighbors.filter(function (n) { return _this.isWithinBounds(n) && !_this.isAlive(n); });
+            var livingCell = currentlyLivingCells[index];
+            var deadNeighborsOfLiveCell = livingCell.neighbors.filter(function (n) { return _this.isWithinBounds(n) && !_this.isAlive(n); });
             deadNeighborsOfLiveCell.forEach(function (n) {
                 deadNeighborCells.push(n);
             });
@@ -209,65 +220,60 @@ var Grid = (function () {
  * Manages the state of the game, i.e. takes care of initialization, turn-based action and reinitialization.
  * Serves as the composition root for all collaborating classes.
  */
-var GameOfLife = (function () {
+var GameOfLife = /** @class */ (function () {
     // CTORS
     function GameOfLife(canvas, gridSize) {
         this._turn = 0;
         this._canvas = canvas;
-        this._grid = new Grid(gridSize);
+        this._currentGrid = new Grid(gridSize);
     }
     Object.defineProperty(GameOfLife.prototype, "turn", {
         // PROPERTIES
         get: function () {
             return this._turn;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     // PUBLIC METHODS
     GameOfLife.prototype.restart = function () {
         this._canvas.clear();
-        this._grid.clear();
-        // this.initRandomCells();
-        // this.initBlinker();
-        this.initTenCellRow();
+        this._currentGrid.clear();
+        this.initRandomCells();
+        //this.initBlinker();
+        //this.initTenCellRow();
         this.paint();
     };
     GameOfLife.prototype.next = function () {
-        var _this = this;
         this._turn++;
-        var nextGrid = new Grid(this._grid.size);
-        // calculate fate of relevant cells
-        var relevantCells = this._grid.collectLivingCellsAndTheirFringeCells();
-        var filterLivingCellsForNextTurn = relevantCells.filter(function (c) { return GameOfLifeRules.willBeAliveNextTurn(c, _this._grid); });
-        nextGrid.makeAliveMany(filterLivingCellsForNextTurn);
-        this._grid = nextGrid;
+        this._currentGrid = this.calculateNextGrid();
         this.paint();
     };
     // PRIVATE METHODS
+    GameOfLife.prototype.calculateNextGrid = function () {
+        var _this = this;
+        var nextGrid = new Grid(this._currentGrid.size);
+        // calculate fate of relevant cells
+        var relevantCells = this._currentGrid.collectLivingCellsAndTheirFringeCells();
+        var filterLivingCellsForNextTurn = relevantCells.filter(function (c) { return GameOfLifeRules.willBeAliveNextTurn(c, _this._currentGrid); });
+        nextGrid.makeAliveMany(filterLivingCellsForNextTurn);
+        return nextGrid;
+    };
     GameOfLife.prototype.paint = function () {
-        this._canvas.paintGrid(this._grid);
+        this._canvas.paintGrid(this._currentGrid);
     };
     GameOfLife.prototype.initBlinker = function () {
-        this._grid.makeAliveAt(30, 50);
-        this._grid.makeAliveAt(31, 50);
-        this._grid.makeAliveAt(32, 50);
+        this._currentGrid.makeAliveAt(30, 50);
+        this._currentGrid.makeAliveAt(31, 50);
+        this._currentGrid.makeAliveAt(32, 50);
     };
     GameOfLife.prototype.initRandomCells = function () {
-        var max = this._grid.size;
+        var max = this._currentGrid.size;
         var cellsToCreate = RandomNumberGenerator.get(0, max * max);
         for (var i = 0; i < cellsToCreate; i++) {
             var rndX = RandomNumberGenerator.get(0, max);
             var rndY = RandomNumberGenerator.get(0, max);
-            this._grid.makeAlive(new Cell(rndX, rndY));
-        }
-    };
-    GameOfLife.prototype.initTenCellRow = function () {
-        var cell = new Cell(20, 20);
-        this._grid.makeAlive(cell);
-        for (var i = 0; i < 9; i++) {
-            var cell = cell.rightNeighbor;
-            this._grid.makeAlive(cell);
+            this._currentGrid.makeAlive(new Cell(rndX, rndY));
         }
     };
     return GameOfLife;
@@ -275,7 +281,7 @@ var GameOfLife = (function () {
 /**
  * Stores the GoL rules and lets Cells and Grids operate on these.
  */
-var GameOfLifeRules = (function () {
+var GameOfLifeRules = /** @class */ (function () {
     function GameOfLifeRules() {
     }
     GameOfLifeRules.willBeAliveNextTurn = function (cell, currentGrid) {
@@ -304,11 +310,11 @@ var GameOfLifeRules = (function () {
 /**
  * A very simple random number generator.
  */
-var RandomNumberGenerator = (function () {
+var RandomNumberGenerator = /** @class */ (function () {
     function RandomNumberGenerator() {
     }
     RandomNumberGenerator.get = function (min, max) {
-        return Number(Math.floor((Math.random() * max) + min));
+        return Math.floor((Math.random() * max) + min);
     };
     return RandomNumberGenerator;
 }());
@@ -316,7 +322,7 @@ var RandomNumberGenerator = (function () {
  * Takes care of visualizing our logical Grid, i.e. paints the logical Grid onto the HTHML canvas.
  */
 // TODO: separate logic into handlers for visual coordinates and logical ones
-var UniformGridCanvas = (function () {
+var UniformGridCanvas = /** @class */ (function () {
     // CTORS
     function UniformGridCanvas(canvas, cellSizeInPixels) {
         if (cellSizeInPixels === void 0) { cellSizeInPixels = 10; }
@@ -337,23 +343,27 @@ var UniformGridCanvas = (function () {
             this.paintCell(cells);
         }
     };
+    UniformGridCanvas.prototype.clear = function () {
+        this._context.clearRect(0, 0, this._canvas.width, this._canvas.height);
+    };
+    UniformGridCanvas.prototype.resizeToWindowBounds = function () {
+        this._canvas.width = window.innerWidth;
+        this._canvas.height = window.innerHeight;
+    };
+    // PRIVATE METHODS
     UniformGridCanvas.prototype.paintCell = function (cell) {
         this._context.fillStyle = this._defaultFillStyle;
         this._context.fillRect(cell.x * this._cellSizeInPixels, cell.y * this._cellSizeInPixels, this._cellSizeInPixels, this._cellSizeInPixels);
     };
-    UniformGridCanvas.prototype.clearCell = function (cell) {
-        this._context.clearRect(cell.x * this._cellSizeInPixels, cell.y * this._cellSizeInPixels, this._cellSizeInPixels, this._cellSizeInPixels);
-    };
-    UniformGridCanvas.prototype.clear = function () {
-        this._context.clearRect(0, 0, this._canvas.width, this._canvas.height);
-    };
-    // PRIVATE METHODS
-    UniformGridCanvas.prototype.getVisualCellOfLogicalCoords = function (x, y) {
-        return new Cell(this._cellSizeInPixels * x, this._cellSizeInPixels * y);
-    };
     return UniformGridCanvas;
 }());
+var cellSizeInPixels = 10;
+var gridSizeInCells = 100;
 var canvasElement = document.getElementById("canvas");
-var canvas = new UniformGridCanvas(canvasElement, 6);
-var game = new GameOfLife(canvas, 100);
+var grid = new UniformGridCanvas(canvasElement, cellSizeInPixels);
+var game = new GameOfLife(grid, gridSizeInCells);
+game.restart();
+setInterval(function () {
+    game.next();
+}, 200);
 //# sourceMappingURL=gol.js.map

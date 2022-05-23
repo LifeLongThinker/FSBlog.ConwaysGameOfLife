@@ -1,17 +1,14 @@
 ﻿<!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>Conway's GoL</title>
+    <meta charset="utf-8" />
+    <title>Conway's Game of Life</title>
+    <link rel="stylesheet" href="gol.css" />
+    <script src="gol.js" type="text/javascript" defer></script>
 </head>
 <body>
 
-<canvas id="canvas" width="600" height="600" style="border: 1px solid red;"></canvas>
-<div>
-    <button onclick="game.restart()">(Re-) Start</button>
-    <button onclick="game.next()">Next</button>
-</div>
-
-<script src="gol.js" type="text/javascript"></script>
+<canvas id="canvas" width="500px" height="500px"></canvas>
+<div><button onclick="game.restart()">Restart</button></div>
 </body>
 </html>
